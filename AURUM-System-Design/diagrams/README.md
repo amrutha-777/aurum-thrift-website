@@ -112,7 +112,8 @@ Basic, unique Mermaid sources created for review and PNG export.
 2. Install Mermaid CLI:
    ```powershell
    npm install -g @mermaid-js/mermaid-cli
-   Export PNG filesL
+   ---
+### Export PNG filesL
 ```powershell
 mmdc -i class-diagram.mmd -o class-diagram.png
 mmdc -i sequence-diagram.mmd -o sequence-diagram.png
