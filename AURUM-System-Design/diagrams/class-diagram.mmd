@@ -1,0 +1,118 @@
+%% Aurum LLD Class Diagram (basic & unique)
+classDiagram
+    direction LR
+
+    class User {
+      +id: string
+      +email: string
+      +displayName: string
+      +roles: string[]
+      +bio?: string
+      +avatarUrl?: string
+      +badges?: string[]
+      +savedStoryIds?: string[]
+      +designerProfile?: DesignerProfile
+      +createdAt: timestamp
+      +updatedAt: timestamp
+      +isDeleted: boolean
+    }
+
+    class DesignerProfile {
+      +skills: string[]
+      +availability: "open"|"busy"|"closed"
+      +portfolio: PortfolioItem[]
+    }
+
+    class PortfolioItem {
+      +title: string
+      +mediaUrl: string
+    }
+
+    class Product {
+      +id: string
+      +sellerId: User.id
+      +title: string
+      +description: string
+      +category: string
+      +condition: "new"|"excellent"|"good"|"fair"|"poor"
+      +price: Money
+      +images: string[]
+      +status: "listed"|"reserved"|"sold"|"archived"
+      +tags?: string[]
+      +storyId?: Story.id
+      +createdAt: timestamp
+      +updatedAt: timestamp
+      +isDeleted: boolean
+    }
+
+    class Money {
+      +amount: number
+      +currency: string
+    }
+
+    class Story {
+      +id: string
+      +productId: Product.id
+      +authorId: User.id
+      +type: "nostalgic"|"sentimental"|"practical"|"other"
+      +content: string
+      +attachments?: string[]
+      +commentsCount: number
+      +savesCount: number
+      +createdAt: timestamp
+      +updatedAt: timestamp
+      +isDeleted: boolean
+    }
+
+    class CustomizationRequest {
+      +id: string
+      +requesterId: User.id
+      +designerId: User.id
+      +productId?: Product.id
+      +brief: string
+      +referenceImages?: string[]
+      +status: "requested"|"accepted"|"in_progress"|"completed"|"declined"|"canceled"
+      +priceQuote?: Money
+      +finalPrice?: Money
+      +messages?: Message[]
+      +deadlines?: Deadlines
+      +deliverables?: Deliverable[]
+      +createdAt: timestamp
+      +updatedAt: timestamp
+    }
+
+    class Message {
+      +senderId: User.id
+      +content: string
+      +sentAt: timestamp
+    }
+
+    class Deadlines {
+      +proposedDue: timestamp
+      +finalDue?: timestamp
+    }
+
+    class Deliverable {
+      +title: string
+      +mediaUrl: string
+      +notes?: string
+    }
+
+    class TimelineEvent {
+      +id: string
+      +productId: Product.id
+      +type: "acquired"|"used"|"listed"|"redesigned"|"sold"|"archived"
+      +occurredAt: timestamp
+      +actorId?: User.id
+      +details?: object
+    }
+
+    %% Relationships (basic cardinalities as notes)
+    User "1" --> "*" Product : sellerId
+    Product "0..1" --> "1" Story : storyId
+    User "*" --> "*" Story : comments/saves
+    User "1 (designer)" --> "*" CustomizationRequest : designerId
+    User "1 (requester)" --> "*" CustomizationRequest : requesterId
+    Product "1" --> "*" TimelineEvent : productId
+
+    %% Unique touches: explicit enums + soft delete flags, append-only timeline

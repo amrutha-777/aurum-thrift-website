@@ -1,0 +1,43 @@
+%% Aurum LLD Sequence Diagram (Customization flow)
+sequenceDiagram
+    autonumber
+    actor U as User (Requester)
+    participant FE as Web App (React)
+    participant API as API Layer
+    participant DS as Designer (User: designer)
+    participant DB as Firestore
+    participant TL as Timeline
+
+    U->>FE: Submit customization request (designerId, brief, productId?)
+    FE->>API: POST /customizations {payload}
+    API->>DB: Create CustomizationRequest(status="requested")
+    API-->>FE: 201 Created {id, status}
+
+    Note over DS: Availability must be != "closed"
+    DS->>FE: Open requests list
+    FE->>API: GET /customizations?designerId=DS
+    API->>DB: Query requests
+    API-->>FE: {items}
+
+    DS->>FE: Accept request + priceQuote
+    FE->>API: PATCH /customizations/{id} status="accepted"
+    API->>DB: Update status to accepted + priceQuote
+    API-->>FE: 200 OK {status="accepted"}
+
+    DS->>FE: Start work
+    FE->>API: PATCH /customizations/{id} status="in_progress"
+    API->>DB: Update status to in_progress
+
+    DS->>FE: Upload deliverables
+    FE->>API: PATCH /customizations/{id} add deliverable
+    API->>DB: Append deliverables
+
+    DS->>FE: Mark completed + finalPrice
+    FE->>API: PATCH /customizations/{id} status="completed"
+    API->>DB: Update status to completed + finalPrice
+    alt productId present
+        API->>TL: Append TimelineEvent {type:"redesigned", details:{designerId}}
+    end
+    API-->>FE: 200 OK {status:"completed"}
+
+    Note over API,DB: All transitions validated; append-only timeline
